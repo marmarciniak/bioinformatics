@@ -141,8 +141,8 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence):
     for y in range(sequence2):
         for x in range(sequence):
             if recurrence_table[y][x] == 1:
-                x_rqa.append(x)
-                y_rqa.append(sequence2-y)
+                x_rqa.append(x-0.5)
+                y_rqa.append((sequence2-y)-0.5)
 
     multi_plot = plt.figure(figsize=(12, 9))
     multi_plot.clear()
@@ -154,19 +154,18 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence):
     if sequence > 100 or sequence2 > 100:
         size = 0.5
     else:
-        size = 1
-    plt.plot(x_rqa, y_rqa, 'ro', markersize=size)
-    plt.xlim(0, sequence+1)
-    plt.ylim(0, sequence2+1)
+        size = 3
+    plot = plt.plot(x_rqa, y_rqa, 'ro', markersize=size)
+    plt.xlim(-1, sequence)
+    plt.ylim(0, sequence2 )
     plt.xticks(range(0,sequence+1))
     plt.yticks(range(0,sequence2+1))
-    # plt.grid()
+    plt.grid()
     # ax3 = plt.subplot2grid((8, 8), (2, 6), rowspan=6, colspan=2)
     # ax3.plot(count_x, list(range(len(count_x))))
     # plt.xlim(0, max(count_x) + 1)
     # plt.ylim(0,len(count_x)-1)
-    plt.yticks([])
-    plt.xticks([])
-
+    # plt.yticks([])
+    # plt.xticks([])
     multi_plot.canvas.draw()
     multi_plot.savefig('static/RQA.png')
