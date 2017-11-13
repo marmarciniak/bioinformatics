@@ -1,3 +1,5 @@
 myvenv/
 db.sqlite3
 .idea
+dot_plot/__pycache__/
+dot_plot/migrations/
