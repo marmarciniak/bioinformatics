@@ -27,15 +27,14 @@ def main(request):
     objectslist = DotPlot.objects.all()
     number = len(objectslist) - 1
     first_sequence = str(objectslist[number].first_sequence)
-    print(first_sequence)
     second_sequence = str(objectslist[number].second_sequence)
     first_sequence = re.sub(r"\s+", "", first_sequence, flags=re.UNICODE)
     second_sequence = re.sub(r"\s+", "", second_sequence, flags=re.UNICODE)
-    print(first_sequence)
     # first_sequence = first_sequence.replace(' ','')
     # second_sequence= second_sequence.replace(' ','')
     window = objectslist[number].window
-    recurrence(first_sequence, second_sequence, window)
+    threshold = round(((objectslist[number].threshold)/100 * window),0)
+    recurrence(first_sequence, second_sequence, window, threshold)
     return render(request, "dot_plot.html")
 
 def create_vector_list(sequence, window):
@@ -49,7 +48,7 @@ def create_vector_list(sequence, window):
     return vector_list
 
 
-def recurrence(f_sequence, s_sequence, window):
+def recurrence(f_sequence, s_sequence, window, threshold):
 
     recurrence_table = []
 
@@ -58,15 +57,15 @@ def recurrence(f_sequence, s_sequence, window):
 
 
 
-    for s_amino_win in s_vector_list:
-        row = []
-        for f_amino_win in f_vector_list:
-            counter = 0
-            copy_f_amino_win = []
-            if s_amino_win == f_amino_win:
-                row.append(1)
-            else:
-                row.append(0)
+    # for s_amino_win in s_vector_list:
+    #     row = []
+    #     for f_amino_win in f_vector_list:
+    #         counter = 0
+    #         copy_f_amino_win = []
+    #         if s_amino_win == f_amino_win:
+    #             row.append(1)
+    #         else:
+    #             row.append(0)
 
     recurrence_table = []
     for i in range(len(s_sequence)):
@@ -74,7 +73,11 @@ def recurrence(f_sequence, s_sequence, window):
 
     for i in range(len(s_vector_list)):
         for j in range(len(f_vector_list)):
-            if s_vector_list[i] == f_vector_list[j]:
+            counter = 0
+            for w in range(window):
+                if s_vector_list[i][w] == f_vector_list[j][w]:
+                    counter+=1
+            if counter >= threshold:
                 for w in range(window):
                     recurrence_table[i+w][j+w] = 1
 
@@ -109,7 +112,30 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequ
         size = 0.5
     else:
         size = 3
-    plot = plt.plot(x_rqa, y_rqa, 'ro', markersize=size)
+
+    print(x_rqa)
+    print(y_rqa)
+    i=0
+    while i <(len(x_rqa)-1):
+        x=[]
+        y=[]
+
+        if (x_rqa[i]==x_rqa[i+1]-2) and (y_rqa[i]==y_rqa[i+1]+2):
+            print(i)
+            while(x_rqa[i]==x_rqa[i+1]-2) and (y_rqa[i]==y_rqa[i+1]+2):
+                x.append(x_rqa[i])
+                y.append(y_rqa[i])
+                i+=1
+            x.append(x_rqa[i])
+            y.append(y_rqa[i])
+            plt.plot(x,y)
+        else:
+            plt.plot([x_rqa[i]],[y_rqa[i]], 'ro')
+            i+=1
+        i+=1
+
+
+    #plt.plot(x_rqa, y_rqa, 'ro', markersize=size)
     plt.xlim(-1, (2*sequence)-2)
     plt.ylim(0, 2*sequence2 )
     plt.xticks(range(0,2*sequence,2), f_sequence)
