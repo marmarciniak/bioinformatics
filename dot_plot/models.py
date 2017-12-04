@@ -9,4 +9,4 @@ class DotPlot(models.Model):
     first_sequence = models.TextField(blank=True, null=True)
     second_sequence = models.TextField(blank=True, null=True)
     window = models.IntegerField(default=1, validators=[MinValueValidator(1)])
-    threshold = models.IntegerField(default=100, validators=[MinValueValidator(1),MaxValueValidator(100)])
+    threshold = models.IntegerField(default=1, validators=[MinValueValidator(1)])

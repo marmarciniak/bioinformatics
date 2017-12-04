@@ -24,21 +24,20 @@ def home(request):
     return TemplateResponse(request, 'base.html', ctx)
 
 def main(request):
+    # get data from database
     objectslist = DotPlot.objects.all()
     number = len(objectslist) - 1
     first_sequence = str(objectslist[number].first_sequence)
     second_sequence = str(objectslist[number].second_sequence)
     first_sequence = re.sub(r"\s+", "", first_sequence, flags=re.UNICODE)
     second_sequence = re.sub(r"\s+", "", second_sequence, flags=re.UNICODE)
-    # first_sequence = first_sequence.replace(' ','')
-    # second_sequence= second_sequence.replace(' ','')
     window = objectslist[number].window
-    threshold = round(((objectslist[number].threshold)/100 * window),0)
+    threshold = objectslist[number].threshold
     recurrence(first_sequence, second_sequence, window, threshold)
     return render(request, "dot_plot.html")
 
 def create_vector_list(sequence, window):
-
+    # windowing
     vector_list = []
     for i in range(len(sequence)-(window-1)):
         win = []
@@ -50,22 +49,8 @@ def create_vector_list(sequence, window):
 
 def recurrence(f_sequence, s_sequence, window, threshold):
 
-    recurrence_table = []
-
     f_vector_list = create_vector_list(f_sequence, window)
     s_vector_list = create_vector_list(s_sequence, window)
-
-
-
-    # for s_amino_win in s_vector_list:
-    #     row = []
-    #     for f_amino_win in f_vector_list:
-    #         counter = 0
-    #         copy_f_amino_win = []
-    #         if s_amino_win == f_amino_win:
-    #             row.append(1)
-    #         else:
-    #             row.append(0)
 
     recurrence_table = []
     for i in range(len(s_sequence)):
@@ -91,7 +76,7 @@ def recurrence(f_sequence, s_sequence, window, threshold):
 def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequence):
 
     recurrence_table = np.array(np.reshape(recurrence_table, (sequence2, sequence)).tolist())
-
+    # create list of coordinates for requrence plot
     x_rqa = []
     y_rqa = []
     for y in range(0,2*sequence2,2):
@@ -113,35 +98,39 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequ
     else:
         size = 3
 
-    print(x_rqa)
-    print(y_rqa)
-    i=0
-    while i <(len(x_rqa)-1):
-        x=[]
-        y=[]
+    wsp = [[x, y] for x, y in zip(x_rqa, y_rqa)]
 
-        if (x_rqa[i]==x_rqa[i+1]-2) and (y_rqa[i]==y_rqa[i+1]+2):
-            print(i)
-            while(x_rqa[i]==x_rqa[i+1]-2) and (y_rqa[i]==y_rqa[i+1]+2):
-                x.append(x_rqa[i])
-                y.append(y_rqa[i])
-                i+=1
-            x.append(x_rqa[i])
-            y.append(y_rqa[i])
-            plt.plot(x,y)
+    if wsp:
+        wsp_spr = wsp[0]
+        x = []
+        y = []
+    while len(wsp) > 1:
+        wsp.remove(wsp_spr)
+        if [wsp_spr[0]+2, wsp_spr[1]-2] in wsp:
+            x.append(wsp_spr[0])
+            y.append(wsp_spr[1])
+            wsp_spr = [wsp_spr[0]+2, wsp_spr[1]-2]
         else:
-            plt.plot([x_rqa[i]],[y_rqa[i]], 'ro')
-            i+=1
-        i+=1
+            x.append(wsp_spr[0])
+            y.append(wsp_spr[1])
+
+            wsp_spr = wsp[0]
+
+            if len(x) == 1:
+                ax.plot(x, y, 'ro', markersize=1.5)
+            else:
+                ax.plot(x, y, 'r')
+            x = []
+            y = []
 
 
-    #plt.plot(x_rqa, y_rqa, 'ro', markersize=size)
+
+
+
     plt.xlim(-1, (2*sequence)-2)
-    plt.ylim(0, 2*sequence2 )
+    plt.ylim(0, 2*sequence2)
     plt.xticks(range(0,2*sequence,2), f_sequence)
     plt.yticks(range(1,2*sequence2+1,2), s_sequence[::-1])
-    # plt.set_xticks(range(1,2*sequence+1,2), minor=True)
-    # plt.yticks(range(0,2*sequence2,2), minor=True)
     minorLocator = MultipleLocator(5)
     minor_xticks = np.arange(1, 2*sequence, 2)
     minor_yticks = np.arange(0, 2*sequence2, 2)
@@ -150,11 +139,5 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequ
     ax.set_yticks(minor_yticks, minor=True)
     plt.grid(which='minor', alpha=0.5)
 
-    # ax3 = plt.subplot2grid((8, 8), (2, 6), rowspan=6, colspan=2)
-    # ax3.plot(count_x, list(range(len(count_x))))
-    # plt.xlim(0, max(count_x) + 1)
-    # plt.ylim(0,len(count_x)-1)
-    # plt.yticks([])
-    # plt.xticks([])
     multi_plot.canvas.draw()
     multi_plot.savefig('static/RQA.png')
