@@ -99,7 +99,7 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequ
         size = 3
 
     wsp = [[x, y] for x, y in zip(x_rqa, y_rqa)]
-
+    print(wsp)
     if wsp:
         wsp_spr = wsp[0]
         x = []
@@ -110,18 +110,28 @@ def makeplot_recurrence(sequence, sequence2, recurrence_table,f_sequence, s_sequ
             x.append(wsp_spr[0])
             y.append(wsp_spr[1])
             wsp_spr = [wsp_spr[0]+2, wsp_spr[1]-2]
+            print(x,y)
         else:
             x.append(wsp_spr[0])
             y.append(wsp_spr[1])
 
             wsp_spr = wsp[0]
-
+            print(x, y)
             if len(x) == 1:
                 ax.plot(x, y, 'ro', markersize=1.5)
             else:
                 ax.plot(x, y, 'r')
             x = []
             y = []
+    if len(wsp)==1:
+        x.append(wsp[0][0])
+        y.append(wsp[0][1])
+        if len(x) == 1:
+            ax.plot(x, y, 'ro', markersize=1.5)
+        else:
+            ax.plot(x, y, 'r')
+        x = []
+        y = []
 
 
 
